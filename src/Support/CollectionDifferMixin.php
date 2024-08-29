@@ -13,6 +13,7 @@ class CollectionDifferMixin
 {
     /**
      * @return callable(): CollectionDiffer
+     *
      * @noinspection PhpUnused
      */
     public function differ(): callable

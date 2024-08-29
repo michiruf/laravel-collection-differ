@@ -21,7 +21,8 @@ class CollectionDifferServiceProvider extends PackageServiceProvider
             ->name('collection-differ');
     }
 
-    public function bootingPackage(): void {
+    public function bootingPackage(): void
+    {
         Collection::mixin(new CollectionDifferMixin);
     }
 }

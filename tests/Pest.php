@@ -4,8 +4,6 @@ use CollectionDiffer\Tests\TestCase;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
-use Mockery\LegacyMockInterface;
-use Mockery\MockInterface;
 
 uses(TestCase::class)->in(__DIR__);
 uses(RefreshDatabase::class)->in(__DIR__.'/Unit');

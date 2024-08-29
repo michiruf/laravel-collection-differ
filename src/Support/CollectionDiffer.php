@@ -103,7 +103,7 @@ class CollectionDiffer
     /**
      * @param  ?callable<TSource>  $callback
      */
-    public function handleUnmatchedSourceUsing(callable|null $callback): static
+    public function handleUnmatchedSourceUsing(?callable $callback): static
     {
         $this->handleUnmatchedSourceUsingCallback = $callback;
 
@@ -123,7 +123,7 @@ class CollectionDiffer
     /**
      * @param  ?callable<TDestination>  $callback
      */
-    public function handleUnmatchedDestinationUsing(callable|null $callback): static
+    public function handleUnmatchedDestinationUsing(?callable $callback): static
     {
         $this->handleUnmatchedDestinationUsingCallback = $callback;
 
@@ -133,7 +133,7 @@ class CollectionDiffer
     /**
      * @param  ?callable<TSource, TDestination>  $callback
      */
-    public function handleMatchedUsing(callable|null $callback): static
+    public function handleMatchedUsing(?callable $callback): static
     {
         $this->handleMatchedUsingCallback = $callback;
 
@@ -155,6 +155,7 @@ class CollectionDiffer
         // Perform the diff
         $sourceMatches = $source->map(function ($wrappedEntry) use ($destination) {
             $wrappedDestinationMatch = $destination->firstWhere('id', $wrappedEntry['id']);
+
             return [
                 $wrappedEntry['entry'],
                 $wrappedDestinationMatch['entry'] ?? null,

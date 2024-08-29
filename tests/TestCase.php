@@ -3,8 +3,6 @@
 namespace CollectionDiffer\Tests;
 
 use CollectionDiffer\CollectionDifferServiceProvider;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Workbench\App\Providers\WorkbenchServiceProvider;
 

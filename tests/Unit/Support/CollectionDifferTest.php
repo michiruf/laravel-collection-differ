@@ -122,7 +122,7 @@ it('can use identifiers when diffing', function () {
                         'name' => 'Tom',
                     ],
                 ],
-            ]
+            ],
         ]);
 
     $resultUsingString = (new CollectionDiffer($existingData, $newData))
