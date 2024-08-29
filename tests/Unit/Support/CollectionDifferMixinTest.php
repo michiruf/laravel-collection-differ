@@ -13,6 +13,4 @@ it('can diff using mixin', function () {
         ->and($differ->getDestination())
         ->toBeInstanceOf(Collection::class)
         ->toHaveCount(2);
-
-    dump($differ->diff()->unmatchedSource);
 });

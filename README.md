@@ -1,5 +1,7 @@
 # Laravel Collection Differ
 
+[![Run Tests](https://github.com/michiruf/laravel-collection-differ/actions/workflows/run-tests.yml/badge.svg)](https://github.com/michiruf/laravel-collection-differ/actions/workflows/run-tests.yml)
+
 Tiny helper to diff collections.
 
 ## Installation

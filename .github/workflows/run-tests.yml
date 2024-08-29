@@ -20,4 +20,4 @@ jobs:
           coverage: true
 
       - name: Run Tests
-        run: php artisan test --exclude-group=long-running,wip,deploy -v --coverage
+        run: vendor/bin/pest --exclude-group=long-running,wip,deploy -v --coverage
