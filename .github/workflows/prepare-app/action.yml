@@ -19,10 +19,10 @@ runs:
     - name: Install Dependencies
       uses: ramsey/composer-install@v3
 
-    - name: Create Dotenv
-      shell: sh
-      run: cp .env.example .env
+    #- name: Create Dotenv
+    #  shell: sh
+    #  run: cp .env.example .env
 
-    - name: Generate App Key
-      shell: sh
-      run: php artisan key:generate
+    #- name: Generate App Key
+    #  shell: sh
+    #  run: php artisan key:generate
