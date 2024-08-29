@@ -65,7 +65,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "CollectionDifferServiceProvider"
+                "CollectionDiffer\\CollectionDifferServiceProvider"
             ]
         }
     },
