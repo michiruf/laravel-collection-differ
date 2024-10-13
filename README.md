@@ -29,6 +29,7 @@ ProductModel::all()
     ->handleUnmatchedSourceUsing(fn (ProductModel $model) => $model->delete())
     ->handleUnmatchedDestinationUsing(fn (ProductDto) $dto => ProductModel::createFromDto($dto))
     ->handleMatchedUsing(fn (ProductModel $model, ProductDto $dto) => $model->updateWithDto($dto))
+    ->validateUniqueness() // throw if identifiers are not unique
     ->diff();
 ```
 
@@ -38,7 +39,8 @@ ProductModel::all()
     ->differ(ProductApi::getAll())
     ->identifySourceUsing(fn (ProductModel $model) => $model->id)
     ->identifyDestinationUsing('meta.id') // or: fn (ProductDto $dto) => $dto->meta->id
+    ->validateUniqueness() // throw if identifiers are not unique
     ->diff();
 ```
 
-For additional running examples, have at look at the [tests](tests/Unit/Support/CollectionDifferTest.php).
+For additional examples, have at look at the [tests](tests/Unit/Support/CollectionDifferTest.php).
