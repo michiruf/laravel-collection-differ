@@ -134,3 +134,31 @@ it('can use identifiers when diffing', function () {
         ->unmatchedDestination->toMatchArrayAsJson($resultUsingString->unmatchedDestination)
         ->matched->toMatchArrayAsJson($resultUsingString->matched);
 });
+
+it('can diff using a big data set', function () {
+    $a = collect(range(0, 60000));
+    $b = collect(range(0, 60000));
+    $a->forget([3, 7, 11]);
+    $b->forget([13, 17, 19, 23]);
+
+    expect()
+        ->and($a)->toHaveCount(59998)
+        ->and($b)->toHaveCount(59997);
+
+    $result = (new CollectionDiffer($a, $b))
+        ->validateUniqueness()
+        ->diff();
+
+    expect($result)
+        ->unmatchedSource->toArray()->toBe([13 => 13, 17 => 17, 19 => 19, 23 => 23])
+        ->unmatchedDestination->toArray()->toBe([3 => 3, 7 => 7, 11 => 11]);
+});
+
+it('can validate uniqueness', function () {
+    $a = collect([1, 1, 2]);
+    $b = collect([2, 3]);
+
+    (new CollectionDiffer($a, $b))
+        ->validateUniqueness()
+        ->diff();
+})->throws(RuntimeException::class, 'Identifiers are not unique');

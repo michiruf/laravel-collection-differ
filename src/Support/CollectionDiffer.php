@@ -4,6 +4,7 @@ namespace CollectionDiffer\Support;
 
 use Illuminate\Support\Collection;
 use RuntimeException;
+use stdClass;
 
 /**
  * @template TSource
@@ -22,29 +23,31 @@ class CollectionDiffer
     protected Collection $destination;
 
     /**
-     * @var callable<TSource>|string
+     * @var callable<TSource>|string|null
      */
     protected $identifySourceUsingCallback;
 
     /**
-     * @var callable<TSource>
+     * @var callable<TSource>|null
      */
     protected $handleUnmatchedSourceUsingCallback;
 
     /**
-     * @var callable<TDestination>|string
+     * @var callable<TDestination>|string|null
      */
     protected $identifyDestinationUsingCallback;
 
     /**
-     * @var callable<TDestination>
+     * @var callable<TDestination>|null
      */
     protected $handleUnmatchedDestinationUsingCallback;
 
     /**
-     * @var callable<TSource, TDestination>
+     * @var callable<TSource, TDestination>|null
      */
     protected $handleMatchedUsingCallback;
+
+    protected bool $validateUniqueness = false;
 
     public function __construct(Collection|array|null $source, Collection|array|null $destination)
     {
@@ -140,32 +143,53 @@ class CollectionDiffer
         return $this;
     }
 
+    public function validateUniqueness(bool $validateUniqueness = true): static
+    {
+        $this->validateUniqueness = $validateUniqueness;
+
+        return $this;
+    }
+
+    /**
+     * @return DiffResult<TSource, TDestination>
+     */
     public function diff(): DiffResult
     {
         // Patch entries with their identifiers
-        $source = $this->source->map(fn ($entry) => [
-            'id' => $this->idRetriever($entry, $this->identifySourceUsingCallback),
-            'entry' => $entry,
-        ]);
-        $destination = $this->destination->map(fn ($entry) => [
-            'id' => $this->idRetriever($entry, $this->identifyDestinationUsingCallback),
-            'entry' => $entry,
-        ]);
+        $source = $this->source->mapWithKeys(function ($value, $key) {
+            $entry = new stdClass;
+            $entry->key = $key;
+            $entry->value = &$value;
+
+            return [$this->idRetriever($value, $this->identifySourceUsingCallback) => $entry];
+        });
+        $destination = $this->destination->mapWithKeys(function ($value, $key) {
+            $entry = new stdClass;
+            $entry->key = $key;
+            $entry->value = &$value;
+
+            return [$this->idRetriever($value, $this->identifyDestinationUsingCallback) => $entry];
+        });
+
+        // Check uniqueness
+        if ($this->validateUniqueness && (
+            $this->source->count() != $source->count() ||
+            $this->destination->count() != $destination->count()
+        )) {
+            throw new RuntimeException('Identifiers are not unique');
+        }
 
         // Perform the diff
-        $sourceMatches = $source->map(function ($wrappedEntry) use ($destination) {
-            $wrappedDestinationMatch = $destination->firstWhere('id', $wrappedEntry['id']);
-
-            return [
-                $wrappedEntry['entry'],
-                $wrappedDestinationMatch['entry'] ?? null,
-            ];
-        });
-        [$unmatchedSource, $matched] = $sourceMatches->partition(fn ($tupleEntry) => $tupleEntry[1] === null);
-        $unmatchedSource = $unmatchedSource->map(fn ($tupleEntry) => $tupleEntry[0]);
+        [$unmatchedSource, $matched] = $source
+            ->each(fn (stdClass $entry, $id) => $entry->destination = $destination->get($id))
+            ->partition(fn ($entry, $id) => $entry->destination === null);
         $unmatchedDestination = $destination
-            ->filter(fn ($wrappedEntry) => $source->firstWhere('id', $wrappedEntry['id']) === null)
-            ->map(fn ($wrappedEntry) => $wrappedEntry['entry']);
+            ->filter(fn (stdClass $entry, $id) => ! $source->has($id));
+
+        // Map to the target format
+        $unmatchedSource = $unmatchedSource->mapWithKeys(fn (stdClass $entry) => [$entry->key => $entry->value]);
+        $unmatchedDestination = $unmatchedDestination->mapWithKeys(fn (stdClass $entry) => [$entry->key => $entry->value]);
+        $matched = $matched->mapWithKeys(fn (stdClass $entry) => [$entry->key => [$entry->value, $entry->destination->value]]);
 
         $result = new DiffResult(
             $unmatchedSource,
@@ -188,7 +212,7 @@ class CollectionDiffer
         return $result;
     }
 
-    protected function idRetriever(mixed $entry, mixed $callback): mixed
+    protected function idRetriever(mixed &$entry, mixed $callback): mixed
     {
         return match (true) {
             $callback === null => $entry,
